@@ -1,0 +1,21 @@
+.scoop {
+	width: 3rem;
+	height: 3rem;
+	border-radius: 50%;
+}
+
+.vanilla {
+	background-color: rgb(245, 245, 220);
+}
+
+.chocolate {
+	background-color: rgb(70, 34, 9);
+}
+
+.strawberry {
+	background-color: rgb(228, 50, 50);
+}
+
+.mint {
+	background-color: rgb(155, 226, 203);
+}

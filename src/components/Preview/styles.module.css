@@ -1,0 +1,22 @@
+.preview {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.scoops {
+	display: flex;
+	flex-wrap: wrap-reverse;
+	justify-content: center;
+	max-width: 96px;
+}
+
+.cone {
+	margin-top: 5px;
+	height: 0;
+	width: 0;
+	border-right: 45px solid transparent;
+	border-left: 45px solid transparent;
+	border-top: 140px solid tan;
+	z-index: 1;
+}
