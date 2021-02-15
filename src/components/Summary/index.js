@@ -5,11 +5,13 @@ import { Header, List } from 'semantic-ui-react';
 const Summary = (props) => {
 	const ingredientSummary = Object.keys(props.ingredients)
 		.map(igKey => {
-			return (
-				<List.Item key={igKey}>
-					<strong style={{textTransform: 'capitalize'}}>{igKey}</strong>: {props.ingredients[igKey]}
-				</List.Item>
-			)
+			if (props.ingredients[igKey] > 0) {
+				return (
+					<List.Item key={igKey}>
+						<strong style={{textTransform: 'capitalize'}}>{igKey}</strong>: {props.ingredients[igKey]}
+					</List.Item>
+				)
+			}
 		})
 
 	return (

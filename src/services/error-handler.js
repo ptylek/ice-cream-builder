@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Header, Icon, Modal } from 'semantic-ui-react';
 
 const errorHandler = (WrappedComponent, axios) => {

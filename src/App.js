@@ -1,15 +1,14 @@
-import React, { useState } from 'react';
-import Builder from 'containers/Builder';
+import React from 'react';
+import { Route, Switch, Redirect, NavLink } from 'react-router-dom';
 import 'semantic-ui-css/semantic.min.css';
 import { Menu, Icon } from 'semantic-ui-react'
+import Builder from 'containers/Builder';
+import Checkout from 'containers/Checkout';
+import CheckoutSuccess from 'containers/Checkout/CheckoutSuccess';
+import Orders from 'containers/Orders';
+import routes from 'routes';
 
 const App = () => {
-	const [activeItem, setActiveItem] = useState('home')
-
-	const handleItemClick = (e, { name }) => {
-		setActiveItem(name);
-	}
-
 	return (
 		<>
 			<Menu stackable>
@@ -17,21 +16,26 @@ const App = () => {
 					<Icon name='snowflake' style={{fontSize: '2rem'}}/> Snowflake
 				</Menu.Item>
 				<Menu.Item
-					name='home'
-					active={activeItem === 'home'}
-					onClick={handleItemClick}
-				>
-					<Icon name='home'/> Home
-				</Menu.Item>
-				<Menu.Item
-					name='builder'
-					active={activeItem === 'builder'}
-					onClick={handleItemClick}
+					as={NavLink}
+					to={routes.BUILDER}
+					exact
 				>
 					<Icon name='cogs'/> Builder
 				</Menu.Item>
+				<Menu.Item
+					as={NavLink}
+					to={routes.ORDERS}
+				>
+					<Icon name='list alternate outline'/> Orders
+				</Menu.Item>
 			</Menu>
-			<Builder/>
+			<Switch>
+				<Route path={routes.CHECKOUT_SUCCESS} render={props => <CheckoutSuccess {...props}/>}/>
+				<Route path={routes.CHECKOUT} component={Checkout}/>
+				<Route path={routes.ORDERS} component={Orders}/>
+				<Route path={routes.BUILDER} component={Builder}/>
+				<Route render={() => <Redirect to={routes.BUILDER} />} />
+			</Switch>
 		</>
 	);
 }

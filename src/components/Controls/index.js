@@ -2,17 +2,16 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import QtySwitcher from 'components/Controls/QtySwitcher';
 import Summary from 'components/Summary';
-
+import { Button, Icon, Modal, List, Dimmer, Loader, Statistic, Segment, Item } from 'semantic-ui-react';
 import INGREDIENT_PRICES from 'constants/ingredient-prices';
-
-import { Button, Icon, Modal, List, Dimmer, Loader, Statistic, Segment, Item, Image } from 'semantic-ui-react';
 
 const controlPreview = [
 	{label: 'Strawberry', type: 'strawberry'},
 	{label: 'Chocolate', type: 'chocolate'},
 	{label: 'Mint', type: 'mint'},
 	{label: 'Vanilla', type: 'vanilla'}
-]
+];
+
 const Controls = (props) => {
 	let orderSummary = <Summary price={props.totalPrice} ingredients={props.ingredients}/>
 
@@ -29,8 +28,6 @@ const Controls = (props) => {
 				<List.Item key={ctrl.label} style={{marginBottom: '2rem'}}>
 					<Item.Group unstackable>
 						<Item>
-							<Item.Image size='tiny' src='https://react.semantic-ui.com/images/wireframe/image.png' />
-
 							<Item.Content>
 								<Item.Header>{ctrl.label} </Item.Header>
 								<Item.Meta>{INGREDIENT_PRICES[ctrl.type]}$</Item.Meta>

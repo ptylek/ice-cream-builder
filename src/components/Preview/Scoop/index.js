@@ -1,6 +1,6 @@
 import React from 'react';
-import classes from 'components/Preview/Scoop/styles.module.css'
 import PropTypes from 'prop-types';
+import classes from 'components/Preview/Scoop/styles.module.css'
 
 const Scoop = (props) => {
 	let scoop = null;

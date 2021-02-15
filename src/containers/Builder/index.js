@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import _ from 'lodash';
+import PropTypes from 'prop-types';
 import Controls from 'components/Controls';
 import Preview from 'components/Preview';
-
 import { Grid, Loader } from 'semantic-ui-react';
-
 import instance from 'services/orders';
 import errorHandler from 'services/error-handler';
-
 import INGREDIENT_PRICES from 'constants/ingredient-prices';
+import routes from 'routes';
 
-const Builder = () => {
+const Builder = (props) => {
 	const [ingredients, setIngredients] = useState(null);
 	const [error, setError] = useState(false);
+	const [price, setPrice] = useState(4);
+	const [purchasable, setPurchasable] = useState(false);
+	const [purchasing, setPurchasing] = useState(false);
+	const [loading, setLoading] = useState(false);
 
 	useEffect(() => {
 		instance.get('ingredients.json')
@@ -23,14 +26,6 @@ const Builder = () => {
 				setError(true);
 			});
 	}, []);
-
-	const [price, setPrice] = useState(4)
-
-	const [purchasable, setPurchasable] = useState(false);
-
-	const [purchasing, setPurchasing] = useState(false);
-	
-	const [loading, setLoading] = useState(false);
 
 	useEffect(() => {
 		if (ingredients) {
@@ -49,33 +44,20 @@ const Builder = () => {
 	}
 
 	const toCheckoutHandler = () => {
-		setLoading(true);
+		const queryParams = [];
 
-		const order = {
-			ingredients: ingredients,
-			price: price,
-			customer: {
-				name: 'Pawel',
-				address: {
-					street: 'Test Street 1',
-					postcode: '12-345',
-					city: 'Test City',
-					country: 'Poland'
-				},
-				email: 'test@test.com'
-			},
-			delivery: 'express'
-		};
+		_.forEach(ingredients, (value, key) => {
+			queryParams.push(encodeURIComponent(key) + '=' + encodeURIComponent(value));
+		});
 
-		instance.post('/orders.json', order)
-			.then(responseData => {
-				setLoading(false);
-				setPurchasing(false);
-			})
-			.catch(error => {
-				setLoading(false);
-				setPurchasing(false);
-			});
+		queryParams.push('price=' + price);
+
+		const queryString = queryParams.join('&');
+
+		props.history.push({
+			pathname: routes.CHECKOUT,
+			search: '?' + queryString
+		});
 	};
 
 	const addIngredient = (type) => {
@@ -156,6 +138,10 @@ const Builder = () => {
 			</Grid>
 		</>
 	)
+}
+
+Builder.propTypes = {
+	history: PropTypes.object
 }
 
 export default errorHandler(Builder, instance);

@@ -1,8 +1,8 @@
 import React from 'react';
-import _ from 'lodash';
-import classes from 'components/Preview/styles.module.css';
-import Scoop from 'components/Preview/Scoop';
 import PropTypes from 'prop-types';
+import _ from 'lodash';
+import Scoop from 'components/Preview/Scoop';
+import classes from 'components/Preview/styles.module.css';
 
 const Preview = (props) => {
 	const flavours = _.flatten(Object.keys(props.ingredients)
