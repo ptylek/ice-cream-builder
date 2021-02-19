@@ -5,7 +5,8 @@ import updateObject from 'utility/update-object';
 const initialState = {
 	ingredients: null,
 	totalPrice: 4,
-	fetchIngredientsError: false
+	fetchIngredientsError: false,
+	building: false
 }
 
 const addIngredient = (state, action) => {
@@ -15,7 +16,8 @@ const addIngredient = (state, action) => {
 
 	const updatedStateAdd = {
 		ingredients: updatedIngredientsAdd,
-		totalPrice: state.totalPrice + INGREDIENT_PRICES[action.ingredientName]
+		totalPrice: state.totalPrice + INGREDIENT_PRICES[action.ingredientName],
+		building: true
 	}
 
 	return updateObject(state, updatedStateAdd);
@@ -28,7 +30,8 @@ const removeIngredient = (state, action) => {
 
 	const updatedStateRemove = {
 		ingredients: updatedIngredientsRemove,
-		totalPrice: state.totalPrice - INGREDIENT_PRICES[action.ingredientName]
+		totalPrice: state.totalPrice - INGREDIENT_PRICES[action.ingredientName],
+		building: true
 	}
 
 	return updateObject(state, updatedStateRemove);
@@ -42,7 +45,8 @@ const reducer = (state = initialState, action) => {
 			return updateObject(state, {
 				ingredients: action.ingredients,
 				fetchIngredientsError: false,
-				totalPrice: 4
+				totalPrice: 4,
+				building: false
 			});
 		case actionTypes.FETCH_INGREDIENTS_FAILED:
 			return updateObject(state, {

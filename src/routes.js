@@ -3,5 +3,7 @@ export default {
 	CHECKOUT: '/checkout',
 	CHECKOUT_CONTACT: '/checkout/contact',
 	CHECKOUT_SUCCESS: '/checkout/success',
-	ORDERS: '/orders'
+	ORDERS: '/orders',
+	AUTH: '/auth',
+	LOGOUT: '/logout'
 }

@@ -22,11 +22,11 @@ export const purchaseStart = () => {
 	}
 }
 
-export const purchase = (orderData) => {
+export const purchase = (orderData, token) => {
 	return dispatch  => {
 		dispatch(purchaseStart());
 
-		instance.post('orders.json', orderData)
+		instance.post('orders.json?auth=' + token, orderData)
 			.then(response => {
 				dispatch(purchaseSuccess(response.data.name, orderData));
 			})
@@ -62,11 +62,12 @@ export const fetchOrdersStart = () => {
 	}
 }
 
-export const fetchOrders = () => {
+export const fetchOrders = (token, userId) => {
 	return dispatch  => {
 		dispatch(fetchOrdersStart());
+		const queryParams = '?auth=' + token + '&orderBy="userId"&equalTo="' + userId + '"';
 
-		instance.get('orders.json')
+		instance.get('orders.json' + queryParams)
 			.then(response => {
 				const fetchedOrders = [];
 

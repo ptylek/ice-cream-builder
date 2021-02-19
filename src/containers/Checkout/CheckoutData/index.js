@@ -48,10 +48,11 @@ const CheckoutData = (props) => {
 					postcode: address.postcode,
 				},
 				email: email
-			}
+			},
+			userId: props.userId
 		};
 
-		props.onPurchase(order);
+		props.onPurchase(order, props.token);
 	}
 
 	const checkRules = (target) => {
@@ -68,6 +69,11 @@ const CheckoutData = (props) => {
 		if (target.maxLength !== -1) {
 			isValid = target.value.length <= target.maxLength && isValid;
 		}
+
+		if (target.type === 'email') {
+            const pattern = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+            isValid = pattern.test(target.value) && isValid;
+        }
 
 		const invalidClass = 'error';
 		const successClass = classes.success;
@@ -164,20 +170,24 @@ CheckoutData.propTypes = {
 	totalPrice: PropTypes.number,
 	history: PropTypes.any,
 	onPurchase: PropTypes.func,
-	loading: PropTypes.bool
+	loading: PropTypes.bool,
+	token: PropTypes.any,
+	userId: PropTypes.any
 }
 
 const mapStateToProps = state => {
 	return {
 		ingredients: state.builder.ingredients,
 		totalPrice: state.builder.totalPrice,
-		loading: state.order.loading
+		loading: state.order.loading,
+		token: state.auth.token,
+		userId: state.auth.userId
 	}
 }
 
 const mapDispatchToProps = dispatch => {
 	return {
-		onPurchase: (orderData) => dispatch(actions.purchase(orderData))
+		onPurchase: (orderData, token) => dispatch(actions.purchase(orderData, token))
 	}
 }
 

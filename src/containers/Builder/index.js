@@ -35,6 +35,10 @@ const Builder = (props) => {
 		props.history.push(routes.CHECKOUT);
 	};
 
+	const redirectToAuth = () => {	
+		props.history.push(routes.AUTH);
+	}
+
 	let disabledData = {
 		...props.ingredients
 	}
@@ -59,6 +63,8 @@ const Builder = (props) => {
 						purchasing={purchasing}
 						ingredients={props.ingredients}
 						toCheckout={toCheckoutHandler}
+						isAuthenticated={props.isAuthenticated}
+						redirectToAuth={redirectToAuth}
 					/>
 				</Grid.Column>
 				<Grid.Column textAlign='center'>
@@ -88,13 +94,15 @@ Builder.propTypes = {
 	fetchIngredientsError: PropTypes.bool,
 	onInitIngredients: PropTypes.func,
 	onCheckoutInit: PropTypes.func,
+	isAuthenticated: PropTypes.bool
 }
 
 const mapStateToProps = state => {
 	return {
 		ingredients: state.builder.ingredients,
 		totalPrice: state.builder.totalPrice,
-		fetchIngredientsError: state.builder.fetchIngredientsError
+		fetchIngredientsError: state.builder.fetchIngredientsError,
+		isAuthenticated: state.auth.token !== null
 	}
 }
 

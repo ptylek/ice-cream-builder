@@ -50,13 +50,17 @@ const Controls = (props) => {
 				</Statistic>
 				<Modal
 					onClose={() => props.ordered(false)}
-					onOpen={() => props.ordered(true)} 
+					onOpen={() => {
+						if (!props.isAuthenticated) {
+							props.redirectToAuth();
+						}
+
+						props.ordered(true);
+					}} 
 					open={props.purchasing}
 					trigger={
-						<Button animated>
-							<Button.Content 
-								visible 
-								disabled={!props.purchasable}>Order now!</Button.Content>
+						<Button animated disabled={!props.purchasable}>
+							<Button.Content visible>{props.isAuthenticated ? 'Order now!' : 'Sign up to order!'}</Button.Content>
 							<Button.Content hidden>
 								<Icon name='arrow right' />
 							</Button.Content>
@@ -97,6 +101,8 @@ Controls.propTypes = {
 	placeOrder: PropTypes.func,
 	toCheckout: PropTypes.func,
 	loading: PropTypes.bool,
+	isAuthenticated: PropTypes.bool,
+	redirectToAuth: PropTypes.func
 }
 
 export default Controls;

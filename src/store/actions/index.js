@@ -9,3 +9,9 @@ export {
 	checkoutInit,
 	fetchOrders
 } from 'store/actions/order';
+
+export {
+	auth,
+	logout,
+	authCheck
+} from 'store/actions/auth';
