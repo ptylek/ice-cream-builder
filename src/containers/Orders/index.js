@@ -1,44 +1,35 @@
-import React, { useState, useEffect } from 'react';
-import { Item, Grid } from 'semantic-ui-react';
+import React, { useEffect } from 'react';
+import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
+import { Item, Grid, Loader } from 'semantic-ui-react';
 import Order from 'components/Order';
 import instance from 'services/orders';
 import errorHandler from 'services/error-handler';
+import * as actions from 'store/actions';
 
-const Orders = () => {
-	const [orders, setOrders] = useState([]);
-	const [loading, setLoading] = useState(true);
-
+const Orders = (props) => {
 	useEffect(() => {
-		instance.get('orders.json')
-			.then(response => {
-				const fetchedOrders = [];
-
-				for (let key in response.data) {
-					fetchedOrders.push({
-						...response.data[key],
-						id: key
-					});
-				}
-
-				setOrders(fetchedOrders);
-			})
-			.catch(error => {
-				setLoading(false);
-				if (error) {
-
-				}
-			})
+		props.onFetchOrders();
 	}, []);
 
+	let orders = <Loader>Loading...</Loader>;
+
+	if (!props.loading) {
+		orders =props.orders.map(order => (
+			<Order key={order.id} 
+				   id={order.id} 
+				   ingredients={order.ingredients} 
+				   price={order.price} 
+				   customer={order.customer}/>
+		));
+	}
 	return (
 		<>
 			<Grid columns='one'>
 				<Grid.Row verticalAlign='middle' style={{padding: '2rem'}}>
 					<Grid.Column>
 						<Item.Group>
-							{orders.map(order => {
-								return <Order key={order.id} id={order.id} ingredients={order.ingredients} price={order.price} customer={order.customer}/>
-							})}
+							{orders}
 						</Item.Group>
 					</Grid.Column>
 				</Grid.Row>
@@ -47,4 +38,23 @@ const Orders = () => {
 	)
 }
 
-export default errorHandler(Orders, instance);
+Orders.propTypes = {
+	orders: PropTypes.array,
+	loading: PropTypes.bool,
+	onFetchOrders: PropTypes.func
+}
+
+const mapStateToProps = state => {
+	return {
+		orders: state.order.orders,
+		loading: state.order.loading
+	}
+}
+
+const mapDispatchToProps = dispatch => {
+	return {
+		onFetchOrders: () => dispatch(actions.fetchOrders())
+	}
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(errorHandler(Orders, instance));

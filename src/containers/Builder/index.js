@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { connect } from 'react-redux';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import Controls from 'components/Controls';
@@ -6,30 +7,20 @@ import Preview from 'components/Preview';
 import { Grid, Loader } from 'semantic-ui-react';
 import instance from 'services/orders';
 import errorHandler from 'services/error-handler';
-import INGREDIENT_PRICES from 'constants/ingredient-prices';
 import routes from 'routes';
+import * as actions from 'store/actions';
 
 const Builder = (props) => {
-	const [ingredients, setIngredients] = useState(null);
-	const [error, setError] = useState(false);
-	const [price, setPrice] = useState(4);
 	const [purchasable, setPurchasable] = useState(false);
 	const [purchasing, setPurchasing] = useState(false);
-	const [loading, setLoading] = useState(false);
+
+	useEffect (() => {
+		props.onInitIngredients();
+	}, [])
 
 	useEffect(() => {
-		instance.get('ingredients.json')
-			.then(response => {
-				setIngredients(response.data)
-			})
-			.catch(error =>{
-				setError(true);
-			});
-	}, []);
-
-	useEffect(() => {
-		if (ingredients) {
-			const copyIngredients = {...ingredients};
+		if (props.ingredients) {
+			const copyIngredients = {...props.ingredients};
 			const sum = Object.values(copyIngredients)
 				.reduce((amount, acc) => {
 					return acc += amount;
@@ -37,93 +28,41 @@ const Builder = (props) => {
 
 			setPurchasable(sum > 0);
 		}
-	});
-
-	const purchaseHandler = (val) => {
-		setPurchasing(val);
-	}
+	}, [props.ingredients]);
 
 	const toCheckoutHandler = () => {
-		const queryParams = [];
-
-		_.forEach(ingredients, (value, key) => {
-			queryParams.push(encodeURIComponent(key) + '=' + encodeURIComponent(value));
-		});
-
-		queryParams.push('price=' + price);
-
-		const queryString = queryParams.join('&');
-
-		props.history.push({
-			pathname: routes.CHECKOUT,
-			search: '?' + queryString
-		});
+		props.onCheckoutInit();
+		props.history.push(routes.CHECKOUT);
 	};
 
-	const addIngredient = (type) => {
-		const oldCount = ingredients[type];
-		const updatedCount = oldCount + 1;
-		const updatedIngredients = {...ingredients};
-
-		updatedIngredients[type] = updatedCount;
-
-		setIngredients(updatedIngredients);
-
-		const priceAddition = INGREDIENT_PRICES[type];
-		const newPrice = price + priceAddition;
-
-		setPrice(newPrice);
-	}
-
-	const removeIngredient = (type) => {
-		const oldCount = ingredients[type];
-
-		if (oldCount <= 0) {
-			return;
-		}
-
-		const updatedCount = oldCount - 1;
-		const updatedIngredients = {...ingredients};
-
-		updatedIngredients[type] = updatedCount;
-
-		setIngredients(updatedIngredients);
-
-		const priceDeduction = INGREDIENT_PRICES[type];
-		const newPrice = price - priceDeduction;
-
-		setPrice(newPrice);
-	}
-
 	let disabledData = {
-		...ingredients
+		...props.ingredients
 	}
 
 	_.forEach(disabledData, (value, key) => {
 		disabledData[key] = value <= 0;
 	});
 
-	let builder = error ? 'Ingredients cannot be loaded' : <Loader size='large' active inline='centered'>Loading</Loader>	
+	let builder = props.fetchIngredientsError ? 'Ingredients cannot be loaded' : <Loader size='large' active inline='centered'>Loading</Loader>	
 
-	if (ingredients) {
+	if (props.ingredients) {
 		builder = (
 			<>
 				<Grid.Column>
 					<Controls
-						ingredientAdded={addIngredient}
-						ingredientRemoved={removeIngredient}
+						ingredientAdded={props.onIngredientAdded}
+						ingredientRemoved={props.onIngredientRemoved}
 						disabledControls={disabledData}
-						totalPrice={price}
+						totalPrice={props.totalPrice}
 						purchasable={purchasable}
-						ordered={purchaseHandler}
+						ordered={setPurchasing}
 						purchasing={purchasing}
-						ingredients={ingredients}
+						ingredients={props.ingredients}
 						toCheckout={toCheckoutHandler}
-						loading={loading}
 					/>
 				</Grid.Column>
 				<Grid.Column textAlign='center'>
-					<Preview ingredients={ingredients}/>
+					<Preview ingredients={props.ingredients}/>
 				</Grid.Column>
 			</>
 		);
@@ -141,7 +80,35 @@ const Builder = (props) => {
 }
 
 Builder.propTypes = {
-	history: PropTypes.object
+	history: PropTypes.object,
+	ingredients: PropTypes.object,
+	onIngredientAdded: PropTypes.func,
+	onIngredientRemoved: PropTypes.func,
+	totalPrice: PropTypes.number,
+	fetchIngredientsError: PropTypes.bool,
+	onInitIngredients: PropTypes.func,
+	onCheckoutInit: PropTypes.func,
 }
 
-export default errorHandler(Builder, instance);
+const mapStateToProps = state => {
+	return {
+		ingredients: state.builder.ingredients,
+		totalPrice: state.builder.totalPrice,
+		fetchIngredientsError: state.builder.fetchIngredientsError
+	}
+}
+
+const mapDispatchToProps = dispatch => {
+	return {
+		onIngredientAdded: ingName => {
+			dispatch(actions.addIngredient(ingName));
+		},
+		onIngredientRemoved: ingName => {
+			dispatch(actions.removeIngredient(ingName));
+		},
+		onInitIngredients: () => dispatch(actions.initIngredients()),
+		onCheckoutInit: () => dispatch(actions.checkoutInit())
+	}
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(errorHandler(Builder, instance));

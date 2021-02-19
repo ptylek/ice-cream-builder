@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Route } from 'react-router-dom';
+import React from 'react';
+import { connect } from 'react-redux';
+import { Route, Redirect } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 import CheckoutSummary from 'components/CheckoutSummary';
@@ -7,26 +8,6 @@ import CheckoutData from 'containers/Checkout/CheckoutData';
 import routes from 'routes';
 
 const Checkout = (props) => {
-	const [ingredients, setIngredients] = useState({});
-	const [price, setPrice] = useState(0);
-
-	useEffect(() => {
-		const query = new URLSearchParams(props.location.search);
-		const ingredientsObject = {};
-		let price = 0;
-
-		for (let param of query.entries()) {
-			if (param[0] === 'price') {
-				price = parseFloat(param[1], 10);
-			} else {
-				ingredientsObject[param[0]] = parseInt(param[1], 10);
-			}
-		}
-
-		setIngredients(ingredientsObject);
-		setPrice(price);
-	}, []);
-
 	const checkoutCancelHandler = () => {
 		props.history.goBack();
 	}
@@ -35,19 +16,38 @@ const Checkout = (props) => {
 		props.history.replace(routes.CHECKOUT_CONTACT)
 	}
 
-	return (
-		<>
-			<CheckoutSummary ingredients={ingredients}
-							 checkoutCancel={checkoutCancelHandler}
-							 checkoutContinue={checkoutContinueHandler}/>
-			<Route path={routes.CHECKOUT_CONTACT} render={(props) => (<CheckoutData ingredients={ingredients} price={price} {...props}/>)}/>
-		</>
-	)
+	let summary = <Redirect to={routes.BUILDER}/>
+
+	if (props.ingredients) {
+		const checkoutRedirect = props.purchased ? <Redirect to={routes.BUILDER}/> : null;
+
+		summary = (
+			<>
+				{checkoutRedirect}
+				<CheckoutSummary ingredients={props.ingredients}
+					checkoutCancel={checkoutCancelHandler}
+					checkoutContinue={checkoutContinueHandler}/>
+				<Route path={routes.CHECKOUT_CONTACT} component={CheckoutData}/>
+			</>
+		)
+	}
+
+	return summary;
 };
 
 Checkout.propTypes = {
 	history: PropTypes.object,
-	location: PropTypes.any
+	location: PropTypes.any,
+	ingredients: PropTypes.object,
+	onCheckoutInit: PropTypes.func,
+	purchased: PropTypes.bool
 }
 
-export default Checkout;
+const mapStateToProps = state => {
+	return {
+		ingredients: state.builder.ingredients,
+		purchased: state.order.purchased
+	}
+}
+
+export default connect(mapStateToProps)(Checkout);
