@@ -3,10 +3,9 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Form, Button, Grid, Loader, Dimmer } from 'semantic-ui-react';
 import instance from 'services/orders';
-import routes from 'routes';
 import errorHandler from 'services/error-handler';
-import classes from 'containers/Checkout/CheckoutData/styles.module.css';
 import * as actions from 'store/actions';
+import checkRules from 'utility/check-rules';
 
 const CheckoutData = (props) => {
 	const [name, setName] = useState('');
@@ -55,65 +54,20 @@ const CheckoutData = (props) => {
 		props.onPurchase(order, props.token);
 	}
 
-	const checkRules = (target) => {
-		let isValid = true;
-
-		if (target.required) {
-			isValid = target.value.trim() !== '' && isValid;
-		}
-
-		if (target.minLength !== -1) {
-			isValid = target.value.length >= target.minLength && isValid;
-		}
-
-		if (target.maxLength !== -1) {
-			isValid = target.value.length <= target.maxLength && isValid;
-		}
-
-		if (target.type === 'email') {
-            const pattern = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
-            isValid = pattern.test(target.value) && isValid;
-        }
-
-		const invalidClass = 'error';
-		const successClass = classes.success;
-		const parent = target.parentElement;
-
-		if (!isValid) {
-			parent.classList.remove(successClass);
-
-			if (!parent.classList.contains(invalidClass)) {
-				parent.classList.add(invalidClass);
-			}
-		} else {
-			if (parent.classList.contains(invalidClass)) {
-				parent.classList.remove(invalidClass);
-			}
-
-			parent.classList.add(successClass);
-		}
-
-		const clonedHelper = {...formValidationHelper};
-
-		clonedHelper[target.name] = isValid;
-
-		setFormValidationHelper(clonedHelper);
-	}
-
 	let form = (
 		<Form size='small'>
 			<Form.Group widths={2}>
 				<Form.Field>
 					<label>Name</label>
 					<input name='name' value={name} required maxLength={20} onChange={(e) => {
-						checkRules(e.target);
+						checkRules(e.target, formValidationHelper, setFormValidationHelper);
 						setName(e.target.value);
 					}} placeholder='Your name' />
 				</Form.Field>
 				<Form.Field>
 					<label>Email Address</label>
 					<input name='email' type='email' required value={email} onChange={(e) => {
-							checkRules(e.target);
+							checkRules(e.target, formValidationHelper, setFormValidationHelper);
 							setEmail(e.target.value);
 						}} placeholder='Email Address' />
 				</Form.Field>
@@ -122,7 +76,7 @@ const CheckoutData = (props) => {
 				<Form.Field>
 					<label>Street</label>
 					<input name='street' value={address.street} required onChange={(e) => {
-						checkRules(e.target);
+						checkRules(e.target, formValidationHelper, setFormValidationHelper);
 						setAddress(prevData => {
 							return {
 								street: e.target.value,
@@ -134,7 +88,7 @@ const CheckoutData = (props) => {
 				<Form.Field>
 					<label>Post Code</label>
 					<input name='postcode' value={address.postcode} required maxLength={5} onChange={(e) => {
-						checkRules(e.target);
+						checkRules(e.target, formValidationHelper, setFormValidationHelper);
 						setAddress(prevData => {
 							return {
 								street: prevData.street,

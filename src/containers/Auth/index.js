@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Form, Button, Grid, Header, Icon, Loader } from 'semantic-ui-react';
-import classes from 'containers/Auth/styles.module.css';
 import * as actions from 'store/actions';
 import { Redirect }  from 'react-router-dom';
 import routes from 'routes';
+import checkRules from 'utility/check-rules';
 
 const Auth = (props) => {
 	const [email, setEmail] = useState('');
@@ -29,51 +29,6 @@ const Auth = (props) => {
 		setFormIsValid(validationCheck)
 	}, [formValidationHelper]);
 
-	const checkRules = (target) => {
-		let isValid = true;
-
-		if (target.required) {
-			isValid = target.value.trim() !== '' && isValid;
-		}
-
-		if (target.minLength !== -1) {
-			isValid = target.value.length >= target.minLength && isValid;
-		}
-
-		if (target.maxLength !== -1) {
-			isValid = target.value.length <= target.maxLength && isValid;
-		}
-		
-		if (target.type === 'email') {
-            const pattern = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
-            isValid = pattern.test(target.value) && isValid;
-        }
-
-		const invalidClass = 'error';
-		const successClass = classes.success;
-		const parent = target.parentElement;
-
-		if (!isValid) {
-			parent.classList.remove(successClass);
-
-			if (!parent.classList.contains(invalidClass)) {
-				parent.classList.add(invalidClass);
-			}
-		} else {
-			if (parent.classList.contains(invalidClass)) {
-				parent.classList.remove(invalidClass);
-			}
-
-			parent.classList.add(successClass);
-		}
-
-		const clonedHelper = {...formValidationHelper};
-
-		clonedHelper[target.name] = isValid;
-
-		setFormValidationHelper(clonedHelper);
-	}
-
 	const submitHandler = (event) => {
         event.preventDefault();
         props.onAuth(email, password, isRegister);
@@ -89,14 +44,14 @@ const Auth = (props) => {
 			<Form.Field>
 				<label>Email Address</label>
 				<input name='email' type='email' value={email} required onChange={(e) => {
-					checkRules(e.target);
+					checkRules(e.target, formValidationHelper, setFormValidationHelper);
 					setEmail(e.target.value);
 				}} placeholder='Email Address' />
 			</Form.Field>
 			<Form.Field>
 				<label>Password</label>
 				<input name='password' type='password' required minLength={7} value={password} onChange={(e) => {
-						checkRules(e.target);
+						checkRules(e.target, formValidationHelper, setFormValidationHelper);
 						setPassword(e.target.value);
 					}} placeholder='Password' />
 			</Form.Field>

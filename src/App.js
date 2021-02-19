@@ -32,6 +32,7 @@ const App = (props) => {
 				<Route path={routes.CHECKOUT_SUCCESS} render={props => <CheckoutSuccess {...props}/>}/>
 				<Route path={routes.CHECKOUT} component={Checkout}/>
 				<Route path={routes.ORDERS} component={Orders}/>
+				<Route path={routes.AUTH} component={Auth}/>
 				<Route path={routes.LOGOUT} component={Logout}/>
 				<Route path={routes.BUILDER} component={Builder}/>
 				<Redirect to={routes.BUILDER} />
