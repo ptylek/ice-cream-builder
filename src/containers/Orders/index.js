@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
-import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
+import React, { useEffect, useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Item, Grid, Loader } from 'semantic-ui-react';
 import Order from 'components/Order';
 import instance from 'services/orders';
@@ -8,14 +7,22 @@ import errorHandler from 'services/error-handler';
 import * as actions from 'store/actions';
 
 const Orders = (props) => {
+	const orders = useSelector(state => state.order.orders);
+	const loading = useSelector(state => state.order.loading);
+	const token = useSelector(state => state.auth.token);
+	const userId = useSelector(state => state.auth.userId);
+
+	const dispatch = useDispatch();
+	const onFetchOrders = useCallback((token, userId) => dispatch(actions.fetchOrders(token, userId)), [token, userId]);
+
 	useEffect(() => {
-		props.onFetchOrders(props.token, props.userId);
-	}, []);
+		onFetchOrders(token, userId);
+	}, [onFetchOrders, token, userId]);
 
-	let orders = <Loader>Loading...</Loader>;
+	let ordersView = <Loader>Loading...</Loader>;
 
-	if (!props.loading) {
-		orders =props.orders.map(order => (
+	if (!loading) {
+		ordersView =orders.map(order => (
 			<Order key={order.id} 
 				   id={order.id} 
 				   ingredients={order.ingredients} 
@@ -29,7 +36,7 @@ const Orders = (props) => {
 				<Grid.Row verticalAlign='middle' style={{padding: '2rem'}}>
 					<Grid.Column>
 						<Item.Group>
-							{orders}
+							{ordersView}
 						</Item.Group>
 					</Grid.Column>
 				</Grid.Row>
@@ -38,27 +45,4 @@ const Orders = (props) => {
 	)
 }
 
-Orders.propTypes = {
-	orders: PropTypes.array,
-	loading: PropTypes.bool,
-	onFetchOrders: PropTypes.func,
-	token: PropTypes.any,
-	userId: PropTypes.any
-}
-
-const mapStateToProps = state => {
-	return {
-		orders: state.order.orders,
-		loading: state.order.loading,
-		token: state.auth.token,
-		userId: state.auth.userId
-	}
-}
-
-const mapDispatchToProps = dispatch => {
-	return {
-		onFetchOrders: (token, userId) => dispatch(actions.fetchOrders(token, userId))
-	}
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(errorHandler(Orders, instance));
+export default errorHandler(Orders, instance);

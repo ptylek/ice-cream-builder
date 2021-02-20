@@ -1,26 +1,18 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Redirect } from 'react-router-dom'
 import * as actions from 'store/actions';
 import routes from 'routes';
-import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
+import { useDispatch } from 'react-redux';
 
 const Logout = (props) => {
+	const dispatch = useDispatch();
+	const onLogout = useCallback(() => dispatch(actions.logout(), []));
+
 	useEffect(() => {
-		props.onLogout();
-	}, []);
+		onLogout();
+	}, [onLogout]);
 
 	return <Redirect to={routes.BUILDER}/>
 }
 
-Logout.propTypes = {
-	onLogout: PropTypes.func
-}
-
-const mapDispatchToProps = dispatch => {
-	return {
-		onLogout: () => dispatch(actions.logout())
-	}
-}
-
-export default connect(null, mapDispatchToProps)(Logout);
+export default Logout;

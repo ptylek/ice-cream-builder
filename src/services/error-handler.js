@@ -1,38 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Button, Header, Icon, Modal } from 'semantic-ui-react';
+import useHttpErrorHandler from 'hooks/http-error-handler';
 
 const errorHandler = (WrappedComponent, axios) => {
-  	const withErrorHandlerComponent = props => {
-		const [errorMsg, setErrorMsg] = useState(null);
-		
-		const requestInterceptor = axios.interceptors.request.use(
-			req => {
-				setErrorMsg(null);
-				return req;
-			}
-		);
-
-		const responseInterceptor = axios.interceptors.response.use(
-			res => res,
-			error => { 
-				if (error) {
-					setErrorMsg(error);
-				}
-			}
-		);
-
-		useEffect(() => {
-			return () => {
-				axios.interceptors.request.eject(requestInterceptor);
-				axios.interceptors.response.eject(responseInterceptor);
-			};
-		}, [requestInterceptor, responseInterceptor]);
+	const withErrorHandlerComponent = props => {
+		const [error, clearError] = useHttpErrorHandler(axios);
 
 		return (
 			<>
 				<Modal
 					basic
-					open={errorMsg !== null}
+					open={error !== null}
 					size='small'
 				>
 					<Header icon>
@@ -40,10 +18,10 @@ const errorHandler = (WrappedComponent, axios) => {
 						Something went wrong!
 					</Header>
 					<Modal.Content>
-						{errorMsg !== null ? errorMsg.message : null}
+						{error !== null ? error.message : null}
 					</Modal.Content>
 					<Modal.Actions>
-						<Button basic color='green' inverted onClick={() => setErrorMsg(null)}>
+						<Button basic color='green' inverted onClick={() => clearError()}>
 							<Icon name='checkmark' /> Okay
 						</Button>
 					</Modal.Actions>
@@ -52,7 +30,7 @@ const errorHandler = (WrappedComponent, axios) => {
 			</>
 		)
 	};
-	
+
 	return withErrorHandlerComponent;
 };
 

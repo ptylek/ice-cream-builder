@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import Controls from 'components/Controls';
@@ -13,14 +13,25 @@ import * as actions from 'store/actions';
 const Builder = (props) => {
 	const [purchasable, setPurchasable] = useState(false);
 	const [purchasing, setPurchasing] = useState(false);
+	
+	const ingredients = useSelector(state => state.builder.ingredients);
+	const totalPrice = useSelector(state => state.builder.totalPrice);
+	const fetchIngredientsError = useSelector(state => state.builder.fetchIngredientsError);
+	const isAuthenticated = useSelector(state => state.auth.token !== null);
+
+	const dispatch = useDispatch();
+	const onIngredientAdded = useCallback(ingName => dispatch(actions.addIngredient(ingName)), []);
+	const onIngredientRemoved = useCallback(ingName => dispatch(actions.removeIngredient(ingName)), []);
+	const onInitIngredients = useCallback(() => dispatch(actions.initIngredients()), []);
+	const onCheckoutInit = useCallback(() => dispatch(actions.checkoutInit()), []);
 
 	useEffect (() => {
-		props.onInitIngredients();
-	}, [])
+		onInitIngredients();
+	}, [onInitIngredients])
 
 	useEffect(() => {
-		if (props.ingredients) {
-			const copyIngredients = {...props.ingredients};
+		if (ingredients) {
+			const copyIngredients = {...ingredients};
 			const sum = Object.values(copyIngredients)
 				.reduce((amount, acc) => {
 					return acc += amount;
@@ -28,10 +39,10 @@ const Builder = (props) => {
 
 			setPurchasable(sum > 0);
 		}
-	}, [props.ingredients]);
+	}, [ingredients]);
 
 	const toCheckoutHandler = () => {
-		props.onCheckoutInit();
+		onCheckoutInit();
 		props.history.push(routes.CHECKOUT);
 	};
 
@@ -40,35 +51,35 @@ const Builder = (props) => {
 	}
 
 	let disabledData = {
-		...props.ingredients
+		...ingredients
 	}
 
 	_.forEach(disabledData, (value, key) => {
 		disabledData[key] = value <= 0;
 	});
 
-	let builder = props.fetchIngredientsError ? 'Ingredients cannot be loaded' : <Loader size='large' active inline='centered'>Loading</Loader>	
+	let builder = fetchIngredientsError ? 'Ingredients cannot be loaded' : <Loader size='large' active inline='centered'>Loading</Loader>	
 
-	if (props.ingredients) {
+	if (ingredients) {
 		builder = (
 			<>
 				<Grid.Column>
 					<Controls
-						ingredientAdded={props.onIngredientAdded}
-						ingredientRemoved={props.onIngredientRemoved}
+						ingredientAdded={onIngredientAdded}
+						ingredientRemoved={onIngredientRemoved}
 						disabledControls={disabledData}
-						totalPrice={props.totalPrice}
+						totalPrice={totalPrice}
 						purchasable={purchasable}
 						ordered={setPurchasing}
 						purchasing={purchasing}
-						ingredients={props.ingredients}
+						ingredients={ingredients}
 						toCheckout={toCheckoutHandler}
-						isAuthenticated={props.isAuthenticated}
+						isAuthenticated={isAuthenticated}
 						redirectToAuth={redirectToAuth}
 					/>
 				</Grid.Column>
 				<Grid.Column textAlign='center'>
-					<Preview ingredients={props.ingredients}/>
+					<Preview ingredients={ingredients}/>
 				</Grid.Column>
 			</>
 		);
@@ -86,37 +97,7 @@ const Builder = (props) => {
 }
 
 Builder.propTypes = {
-	history: PropTypes.object,
-	ingredients: PropTypes.object,
-	onIngredientAdded: PropTypes.func,
-	onIngredientRemoved: PropTypes.func,
-	totalPrice: PropTypes.number,
-	fetchIngredientsError: PropTypes.bool,
-	onInitIngredients: PropTypes.func,
-	onCheckoutInit: PropTypes.func,
-	isAuthenticated: PropTypes.bool
+	history: PropTypes.object
 }
 
-const mapStateToProps = state => {
-	return {
-		ingredients: state.builder.ingredients,
-		totalPrice: state.builder.totalPrice,
-		fetchIngredientsError: state.builder.fetchIngredientsError,
-		isAuthenticated: state.auth.token !== null
-	}
-}
-
-const mapDispatchToProps = dispatch => {
-	return {
-		onIngredientAdded: ingName => {
-			dispatch(actions.addIngredient(ingName));
-		},
-		onIngredientRemoved: ingName => {
-			dispatch(actions.removeIngredient(ingName));
-		},
-		onInitIngredients: () => dispatch(actions.initIngredients()),
-		onCheckoutInit: () => dispatch(actions.checkoutInit())
-	}
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(errorHandler(Builder, instance));
+export default errorHandler(Builder, instance);

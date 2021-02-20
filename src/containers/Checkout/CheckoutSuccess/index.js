@@ -1,20 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
+import React from 'react';
 import { Grid, Header, Icon, Loader } from 'semantic-ui-react';
+import { useSelector } from 'react-redux';
 
 const CheckoutSuccess = (props) => {
-	const [orderNo, setOrderNo] = useState('');
-
-	useEffect(() => {
-		const query = new URLSearchParams(props.location.search);
-		let orderNo = '';
-
-		for (let param of query.entries()) {
-			orderNo = param[1];
-		}
-
-		setOrderNo(orderNo);
-	}, []);
+	const orders = useSelector(state => state.order.orders);
+	const lastOrder = orders[Object.keys(orders)[Object.keys(orders).length - 1]];
+	const orderNo = lastOrder.id;
 
 	return (
 		<>
@@ -34,9 +25,5 @@ const CheckoutSuccess = (props) => {
 		</>
 	)
 };
-
-CheckoutSuccess.propTypes = {
-	location: PropTypes.object
-}
 
 export default CheckoutSuccess;

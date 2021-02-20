@@ -1,26 +1,36 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import { Route, Switch, Redirect, NavLink } from 'react-router-dom';
 import 'semantic-ui-css/semantic.min.css';
-import { Menu, Icon } from 'semantic-ui-react'
+import { Menu, Icon, Loader } from 'semantic-ui-react'
 import Builder from 'containers/Builder';
-import Checkout from 'containers/Checkout';
 import CheckoutSuccess from 'containers/Checkout/CheckoutSuccess';
-import Orders from 'containers/Orders';
-import Auth from 'containers/Auth';
 import Logout from 'containers/Auth/Logout';
 import routes from 'routes';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import * as actions from 'store/actions';
 
+const Checkout = React.lazy(() => {
+	return import('containers/Checkout');
+});
+
+const Orders = React.lazy(() => {
+	return import('containers/Orders');
+});
+const Auth = React.lazy(() => {
+	return import('containers/Auth');
+});
+
 const App = (props) => {
+	const { onTryAutoSignUp } = props;
+
 	useEffect(() => {
-		props.onTryAutoSignUp();
-	}, []);
+		onTryAutoSignUp();
+	}, [onTryAutoSignUp]);
 
 	let appRoutes = (
 		<Switch>
-			<Route path={routes.AUTH} component={Auth}/>
+			<Route path={routes.AUTH} render={() => <Auth/>}/>
 			<Route path={routes.BUILDER} component={Builder}/>
 			<Redirect to={routes.BUILDER} />
 		</Switch>
@@ -30,9 +40,9 @@ const App = (props) => {
 		appRoutes = (
 			<Switch>
 				<Route path={routes.CHECKOUT_SUCCESS} render={props => <CheckoutSuccess {...props}/>}/>
-				<Route path={routes.CHECKOUT} component={Checkout}/>
-				<Route path={routes.ORDERS} component={Orders}/>
-				<Route path={routes.AUTH} component={Auth}/>
+				<Route path={routes.CHECKOUT} render={props => <Checkout  {...props}/>}/>
+				<Route path={routes.ORDERS} render={props => <Orders  {...props}/>}/>
+				<Route path={routes.AUTH} render={props => <Auth  {...props}/>}/>
 				<Route path={routes.LOGOUT} component={Logout}/>
 				<Route path={routes.BUILDER} component={Builder}/>
 				<Redirect to={routes.BUILDER} />
@@ -77,7 +87,9 @@ const App = (props) => {
 					</Menu.Item>
 				) : null}
 			</Menu>
-			{appRoutes}
+			<Suspense fallback={<Loader active>Loading</Loader>}>
+				{appRoutes}
+			</Suspense>
 		</>
 	);
 }

@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { Form, Button, Grid, Loader, Dimmer } from 'semantic-ui-react';
 import instance from 'services/orders';
 import errorHandler from 'services/error-handler';
@@ -22,6 +21,15 @@ const CheckoutData = (props) => {
 	});
 	const [formIsValid, setFormIsValid] = useState(false);
 
+	const ingredients = useSelector(state => state.builder.ingredients);
+	const totalPrice = useSelector(state => state.builder.totalPrice);
+	const loading = useSelector(state => state.order.loading);
+	const token = useSelector(state => state.auth.token);
+	const userId = useSelector(state => state.auth.userId);
+
+	const dispatch = useDispatch();
+	const onPurchase = useCallback((orderData, token) => dispatch(actions.purchase(orderData, token)), []);
+
 	useEffect(() => {
 		let validationCheck = true;
 
@@ -38,8 +46,8 @@ const CheckoutData = (props) => {
 		event.preventDefault();
 
 		const order = {
-			ingredients: props.ingredients,
-			price: props.totalPrice,
+			ingredients: ingredients,
+			price: totalPrice,
 			customer: {
 				name: name,
 				address: {
@@ -48,10 +56,10 @@ const CheckoutData = (props) => {
 				},
 				email: email
 			},
-			userId: props.userId
+			userId: userId
 		};
 
-		props.onPurchase(order, props.token);
+		onPurchase(order, token);
 	}
 
 	let form = (
@@ -102,7 +110,7 @@ const CheckoutData = (props) => {
 		</Form>
 	)
 
-	if (props.loading) {
+	if (loading) {
 		form = <Dimmer style={{height: '20rem'}} inverted active><Loader size='large' inverted inline='centered'>Sending your order...</Loader></Dimmer>
 	}
 
@@ -119,31 +127,5 @@ const CheckoutData = (props) => {
 	)
 }
 
-CheckoutData.propTypes = {
-	ingredients: PropTypes.object,
-	totalPrice: PropTypes.number,
-	history: PropTypes.any,
-	onPurchase: PropTypes.func,
-	loading: PropTypes.bool,
-	token: PropTypes.any,
-	userId: PropTypes.any
-}
-
-const mapStateToProps = state => {
-	return {
-		ingredients: state.builder.ingredients,
-		totalPrice: state.builder.totalPrice,
-		loading: state.order.loading,
-		token: state.auth.token,
-		userId: state.auth.userId
-	}
-}
-
-const mapDispatchToProps = dispatch => {
-	return {
-		onPurchase: (orderData, token) => dispatch(actions.purchase(orderData, token))
-	}
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(errorHandler(CheckoutData, instance));
+export default errorHandler(CheckoutData, instance);
 

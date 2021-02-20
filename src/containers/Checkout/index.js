@@ -1,5 +1,5 @@
 import React from 'react';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { Route, Redirect } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
@@ -8,6 +8,9 @@ import CheckoutData from 'containers/Checkout/CheckoutData';
 import routes from 'routes';
 
 const Checkout = (props) => {
+	const ingredients = useSelector(state => state.builder.ingredients);
+	const purchased = useSelector(state => state.order.purchased);
+
 	const checkoutCancelHandler = () => {
 		props.history.goBack();
 	}
@@ -18,13 +21,13 @@ const Checkout = (props) => {
 
 	let summary = <Redirect to={routes.BUILDER}/>
 
-	if (props.ingredients) {
-		const checkoutRedirect = props.purchased ? <Redirect to={routes.BUILDER}/> : null;
+	if (ingredients) {
+		const checkoutRedirect = purchased ? <Redirect to={routes.CHECKOUT_SUCCESS}/> : null;
 
 		summary = (
 			<>
 				{checkoutRedirect}
-				<CheckoutSummary ingredients={props.ingredients}
+				<CheckoutSummary ingredients={ingredients}
 					checkoutCancel={checkoutCancelHandler}
 					checkoutContinue={checkoutContinueHandler}/>
 				<Route path={routes.CHECKOUT_CONTACT} component={CheckoutData}/>
@@ -36,18 +39,7 @@ const Checkout = (props) => {
 };
 
 Checkout.propTypes = {
-	history: PropTypes.object,
-	location: PropTypes.any,
-	ingredients: PropTypes.object,
-	onCheckoutInit: PropTypes.func,
-	purchased: PropTypes.bool
+	history: PropTypes.object
 }
 
-const mapStateToProps = state => {
-	return {
-		ingredients: state.builder.ingredients,
-		purchased: state.order.purchased
-	}
-}
-
-export default connect(mapStateToProps)(Checkout);
+export default Checkout;

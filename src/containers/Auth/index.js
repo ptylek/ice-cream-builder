@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Form, Button, Grid, Header, Icon, Loader } from 'semantic-ui-react';
 import * as actions from 'store/actions';
 import { Redirect }  from 'react-router-dom';
@@ -17,6 +16,14 @@ const Auth = (props) => {
 	const [formIsValid, setFormIsValid] = useState(false);
 	const [isRegister, setIsRegister] = useState(true);
 
+	const loading = useSelector(state => state.auth.loading);
+	const error = useSelector(state => state.auth.error);
+	const isAuthenticated = useSelector(state => state.auth.token !== null);
+	const building = useSelector(state => state.builder.building);
+
+	const dispatch = useDispatch();
+	const onAuth = useCallback((email, password, isRegister) => dispatch(actions.auth(email, password, isRegister)), [email, password, isRegister]);
+
 	useEffect(() => {
 		let validationCheck = true;
 
@@ -31,7 +38,7 @@ const Auth = (props) => {
 
 	const submitHandler = (event) => {
         event.preventDefault();
-        props.onAuth(email, password, isRegister);
+        onAuth(email, password, isRegister);
     }
 
 	const switchAuthHandler = (event) => {
@@ -60,20 +67,20 @@ const Auth = (props) => {
 		</Form>
 	)
 
-	if (props.loading) {
+	if (loading) {
 		form = <Loader active/>
 	}
 
 	let errorMessage = null;
 
-	if (props.error) {
-		errorMessage = <p style={{marginTop: '2rem'}}>Error: {props.error}</p>
+	if (error) {
+		errorMessage = <p style={{marginTop: '2rem'}}>Error: {error}</p>
 	}
 
 	let authRedirect = null;
 
-	if (props.isAuthenticated) {
-		authRedirect = <Redirect to={props.building ? routes.CHECKOUT : routes.BUILDER}/>
+	if (isAuthenticated) {
+		authRedirect = <Redirect to={building ? routes.CHECKOUT : routes.BUILDER}/>
 	}
 
 	return (
@@ -95,27 +102,4 @@ const Auth = (props) => {
 	)
 };
 
-Auth.propTypes = {
-	onAuth: PropTypes.func,
-	loading: PropTypes.bool,
-	error: PropTypes.string,
-	isAuthenticated: PropTypes.bool,
-	building: PropTypes.bool
-}
-
-const mapStateToProps = state => {
-	return {
-		loading: state.auth.loading,
-		error: state.auth.error,
-		isAuthenticated: state.auth.token !== null,
-		building: state.builder.building
-	}
-}
-
-const mapDispatchToProps = dispatch => {
-	return {
-		onAuth: (email, password, isRegister) => dispatch(actions.auth(email, password, isRegister))
-	}
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(Auth);
+export default Auth;
